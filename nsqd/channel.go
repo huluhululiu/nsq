@@ -62,6 +62,7 @@ type Channel struct {
 	e2eProcessingLatencyStream *quantile.Quantile
 
 	// TODO: these can be DRYd up
+	//deferred mutex
 	deferredMessages map[MessageID]*pqueue.Item
 	deferredPQ       pqueue.PriorityQueue
 	deferredMutex    sync.Mutex
@@ -576,7 +577,7 @@ func (c *Channel) processInFlightQueue(t int64) bool {
 		}
 		atomic.AddUint64(&c.timeoutCount, 1)
 		c.RLock()
-		client, ok := c.clients[msg.clientID]
+		client, ok := c.clients[msg.clientID]//check client existence
 		c.RUnlock()
 		if ok {
 			client.TimedOutMessage()

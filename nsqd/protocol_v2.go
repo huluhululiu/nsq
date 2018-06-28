@@ -16,9 +16,12 @@ import (
 	"github.com/nsqio/nsq/internal/protocol"
 	"github.com/nsqio/nsq/internal/version"
 )
+//timestampliu
+var topicLatencies []byte
+var topicLat []int64
+var topicMessagesReceived = 0
 
-const maxTimeout = time.Hour
-
+//end
 const (
 	frameTypeResponse int32 = 0
 	frameTypeError    int32 = 1
@@ -324,6 +327,11 @@ func (p *protocolV2) messagePump(client *clientV2, startedChan chan bool) {
 
 			subChannel.StartInFlightTimeout(msg, client.ID, msgTimeout)
 			client.SendingMessage()
+			if bytes.HasPrefix(msg.Body[24:],[]byte{'0'}){
+				binary.PutVarint(msg.Body[80:], time.Now().UnixNano())
+			}
+			
+
 			err = p.SendMessage(client, msg)
 			if err != nil {
 				goto exit
